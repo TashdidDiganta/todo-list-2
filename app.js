@@ -6,6 +6,7 @@ const addBtn = document.getElementById('add-todo');
 const todoList = document.getElementById('todo-list');
 const search = document.getElementById('search-input');
 
+
 const getSavedTask = getDataFromLocalStorage('task') != null? getDataFromLocalStorage('task') : [];
 showAllTask(getSavedTask)
 
@@ -51,7 +52,7 @@ function createTodo(task){
     const d = new Date()
     const time = d.toLocaleDateString('en-us', {
     });
-    const todoObject ={id: Math.random()*10000, task: task, startDate: time, endDate: ''};
+    const todoObject ={id: Math.random()*10000, task: task, isComplite: 'incomplite', startDate: time, endDate: ''};
     const prevData = getDataFromLocalStorage('task');
    
     if(prevData === null || prevData ===""){
@@ -61,6 +62,36 @@ function createTodo(task){
         console.log(newArray)
         return newArray
     }
+}
+
+
+/// check Complite
+function checkTask(){
+    const status = document.querySelectorAll('.task_status');
+    const d = new Date()
+    const endTime = d.toLocaleDateString('en-us', {
+    });
+    status.forEach(e =>{
+        e.addEventListener('change', function(event){
+            const parentId = event.target.parentElement.getAttribute('data-id');
+            const inputCheck = event.target.checked;
+            const changeStatus = inputCheck? 'complite' : 'incomplite';
+            const savedTask = getDataFromLocalStorage('task') != null? getDataFromLocalStorage('task') : [];
+
+            const updateTaskList = savedTask.map(task =>{
+                if(task.id == parentId){
+                    return {...task, isCompite: changeStatus, endDate: endTime}
+                }
+
+                return task;
+            })
+
+            showAllTask(updateTaskList);
+            setDataInLocalStorage(updateTaskList);
+
+
+        })
+    })
 }
 
 
@@ -79,8 +110,11 @@ function setDataInLocalStorage(todo){
 
 
 // SHOW TODO INTO DOM
-
 function showAllTask(allTask){
+    const d = new Date()
+    const time = d.toLocaleDateString('en-us', {
+    });
+
     let showData = `<tr class="top-header">
                     <th class="task-icon">Status <img src="assets/check-mark.png" class="icon"  alt=""></th>
                     <th class="task">Task</th>
@@ -90,12 +124,13 @@ function showAllTask(allTask){
     allTask.map(task =>{
         showData += `<tr>
         <td data-id=${task.id}>
-        <input type="checkbox">
+        <input type="checkbox" class="task_status" ${task.isCompite? 'checked': ''}>
         </td>
         <td>${task.task}</td>
         <td>${task.startDate}</td>
-        <td>X</td>
+        <td>${task.isCompite?  time : 'X'}</td>
     </tr>`
     })
     todoList.innerHTML = showData;
+    checkTask()
 }
